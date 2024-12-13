@@ -31,7 +31,7 @@ jobs:
 
       # Step 4: Upload the results
       - name: Upload JMeter results
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: jmeter-results
           path: result.jtl
@@ -40,7 +40,7 @@ jobs:
         run: |
           /opt/jmeter/bin/jmeter -g result.jtl -o /tmp/jmeter-report
       - name: Upload JMeter HTML Report
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: jmeter-html-report
           path: /tmp/jmeter-report
