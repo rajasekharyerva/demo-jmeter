@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main  # Adjust if you want it to run on other branches or events (like pull_request)
+  workflow_dispatch:  # Allow manual trigger from the GitHub UI
 
 jobs:
   run-jmeter-tests:
