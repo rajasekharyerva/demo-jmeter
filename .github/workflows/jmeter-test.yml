@@ -14,8 +14,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Step 2: Set up JMeter on the runner
+      # Step 2: Cache JMeter installation
+      - name: Cache JMeter installation
+        uses: actions/cache@v3
+        with:
+          path: ~/.jmeter
+          key: ${{ runner.os }}-jmeter-${{ hashFiles('**/jmeter/weather_test_plan.jmx') }}
+          restore-keys: |
+            ${{ runner.os }}-jmeter-
+
+      # Step 3: Install JMeter if not found in cache
       - name: Install JMeter
+        if: steps.cache.outputs.cache-hit != 'true'  # Only install JMeter if not found in the cache
         run: |
           sudo apt-get update
           sudo apt-get install -y openjdk-17-jre
@@ -23,22 +33,28 @@ jobs:
           tar -xvzf apache-jmeter-5.5.tgz
           sudo mv apache-jmeter-5.5 /opt/jmeter
           sudo ln -s /opt/jmeter/bin/jmeter /usr/local/bin/jmeter
+          # Cache JMeter installation for future runs
+          mkdir -p ~/.jmeter
+          cp -r /opt/jmeter ~/.jmeter
 
-      # Step 3: Run JMeter test plan
+      # Step 4: Run JMeter test plan
       - name: Run JMeter test
         run: |
           jmeter -n -t jmeter/weather_test_plan.jmx -l result.jtl
 
-      # Step 4: Upload the results
+      # Step 5: Upload the results
       - name: Upload JMeter results
         uses: actions/upload-artifact@v3
         with:
           name: jmeter-results
           path: result.jtl
 
+      # Step 6: Generate JMeter HTML Report
       - name: Generate JMeter HTML Report
         run: |
           /opt/jmeter/bin/jmeter -g result.jtl -o /tmp/jmeter-report
+
+      # Step 7: Upload JMeter HTML Report
       - name: Upload JMeter HTML Report
         uses: actions/upload-artifact@v3
         with:
