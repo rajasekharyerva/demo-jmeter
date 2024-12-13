@@ -3,8 +3,8 @@ name: Run JMeter Tests
 on:
   push:
     branches:
-      - main  # Adjust if you want it to run on other branches or events (like pull_request)
-  workflow_dispatch:  # Allow manual trigger from the GitHub UI
+      - main
+  workflow_dispatch:  # Manual trigger
 
 jobs:
   run-jmeter-tests:
@@ -19,14 +19,14 @@ jobs:
       - name: Cache JMeter installation
         uses: actions/cache@v3
         with:
-          path: ~/.jmeter
-          key: ${{ runner.os }}-jmeter-${{ hashFiles('**/jmeter/weather_test_plan.jmx') }}
+          path: /opt/jmeter  # Cache JMeter installation directory
+          key: ${{ runner.os }}-jmeter-${{ hashFiles('**/jmeter/weather_test_plan.jmx') }}-${{ hashFiles('**/scripts/install_jmeter.sh') }}
           restore-keys: |
             ${{ runner.os }}-jmeter-
 
       # Step 3: Install JMeter if not found in cache
       - name: Install JMeter
-        if: steps.cache.outputs.cache-hit != 'true'  # Only install JMeter if not found in the cache
+        if: steps.cache.outputs.cache-hit != 'true'  # Only install JMeter if not found in cache
         run: |
           sudo apt-get update
           sudo apt-get install -y openjdk-17-jre
@@ -34,9 +34,6 @@ jobs:
           tar -xvzf apache-jmeter-5.5.tgz
           sudo mv apache-jmeter-5.5 /opt/jmeter
           sudo ln -s /opt/jmeter/bin/jmeter /usr/local/bin/jmeter
-          # Cache JMeter installation for future runs
-          mkdir -p ~/.jmeter
-          cp -r /opt/jmeter ~/.jmeter
 
       # Step 4: Run JMeter test plan
       - name: Run JMeter test
